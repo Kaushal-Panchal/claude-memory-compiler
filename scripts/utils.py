@@ -6,9 +6,9 @@ import re
 from pathlib import Path
 
 from config import (
+    BRAIN_DUMP_DIR,
     CONCEPTS_DIR,
     CONNECTIONS_DIR,
-    DAILY_DIR,
     INDEX_FILE,
     KNOWLEDGE_DIR,
     LOG_FILE,
@@ -96,10 +96,10 @@ def list_wiki_articles() -> list[Path]:
 
 
 def list_raw_files() -> list[Path]:
-    """List all daily log files."""
-    if not DAILY_DIR.exists():
+    """List all brain-dump source markdown files."""
+    if not BRAIN_DUMP_DIR.exists():
         return []
-    return sorted(DAILY_DIR.glob("*.md"))
+    return sorted(BRAIN_DUMP_DIR.glob("*.md"))
 
 
 # ── Index helpers ─────────────────────────────────────────────────────

@@ -5,7 +5,7 @@ from datetime import datetime, timezone
 
 # ── Paths ──────────────────────────────────────────────────────────────
 ROOT_DIR = Path(__file__).resolve().parent.parent
-DAILY_DIR = ROOT_DIR / "daily"
+BRAIN_DUMP_DIR = ROOT_DIR / "brain-dump"
 KNOWLEDGE_DIR = ROOT_DIR / "knowledge"
 CONCEPTS_DIR = KNOWLEDGE_DIR / "concepts"
 CONNECTIONS_DIR = KNOWLEDGE_DIR / "connections"

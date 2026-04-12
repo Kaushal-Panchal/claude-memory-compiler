@@ -6,7 +6,7 @@
 ## The Compiler Analogy
 
 ```
-daily/          = source code    (your conversations - the raw material)
+brain-dump/          = source code    (your conversations - the raw material)
 LLM             = compiler       (extracts and organizes knowledge)
 knowledge/      = executable     (structured, queryable knowledge base)
 lint            = test suite     (health checks for consistency)
@@ -19,12 +19,12 @@ You don't manually organize your knowledge. You have conversations, and the LLM 
 
 ## Architecture
 
-### Layer 1: `daily/` - Conversation Logs (Immutable Source)
+### Layer 1: `brain-dump/` - Raw captures (Immutable Source)
 
-Daily logs capture what happened in your AI coding sessions. These are the "raw sources" - append-only, never edited after the fact.
+Brain-dump files capture what happened in your AI coding sessions. These are the "raw sources" - append-only, never edited after the fact.
 
 ```
-daily/
+brain-dump/
 ├── 2026-04-01.md
 ├── 2026-04-02.md
 ├── ...
@@ -33,7 +33,7 @@ daily/
 Each file follows this format:
 
 ```markdown
-# Daily Log: YYYY-MM-DD
+# Brain dump: YYYY-MM-DD
 
 ## Sessions
 
@@ -91,8 +91,8 @@ Format:
 
 | Article | Summary | Compiled From | Updated |
 |---------|---------|---------------|---------|
-| [[concepts/supabase-auth]] | Row-level security patterns and JWT gotchas | daily/2026-04-02.md | 2026-04-02 |
-| [[connections/auth-and-webhooks]] | Token verification patterns shared across Supabase auth and Stripe webhooks | daily/2026-04-02.md, daily/2026-04-04.md | 2026-04-04 |
+| [[concepts/supabase-auth]] | Row-level security patterns and JWT gotchas | brain-dump/2026-04-02.md | 2026-04-02 |
+| [[connections/auth-and-webhooks]] | Token verification patterns shared across Supabase auth and Stripe webhooks | brain-dump/2026-04-02.md, brain-dump/2026-04-04.md | 2026-04-04 |
 ```
 
 ### `knowledge/log.md` - Build Log
@@ -104,8 +104,8 @@ Format:
 ```markdown
 # Build Log
 
-## [2026-04-01T14:30:00] compile | Daily Log 2026-04-01
-- Source: daily/2026-04-01.md
+## [2026-04-01T14:30:00] compile | Brain dump 2026-04-01
+- Source: brain-dump/2026-04-01.md
 - Articles created: [[concepts/nextjs-project-structure]], [[concepts/tailwind-setup]]
 - Articles updated: (none)
 
@@ -128,8 +128,8 @@ title: "Concept Name"
 aliases: [alternate-name, abbreviation]
 tags: [domain, topic]
 sources:
-  - "daily/2026-04-01.md"
-  - "daily/2026-04-03.md"
+  - "brain-dump/2026-04-01.md"
+  - "brain-dump/2026-04-03.md"
 created: 2026-04-01
 updated: 2026-04-03
 ---
@@ -152,8 +152,8 @@ updated: 2026-04-03
 
 ## Sources
 
-- [[daily/2026-04-01.md]] - Initial discovery during project setup
-- [[daily/2026-04-03.md]] - Updated after debugging session
+- [[brain-dump/2026-04-01.md]] - Initial discovery during project setup
+- [[brain-dump/2026-04-03.md]] - Updated after debugging session
 ```
 
 ### Connection Articles (`knowledge/connections/`)
@@ -167,7 +167,7 @@ connects:
   - "concepts/concept-x"
   - "concepts/concept-y"
 sources:
-  - "daily/2026-04-04.md"
+  - "brain-dump/2026-04-04.md"
 created: 2026-04-04
 updated: 2026-04-04
 ---
@@ -227,27 +227,27 @@ filed: 2026-04-05
 
 ## Core Operations
 
-### 1. Compile (daily/ -> knowledge/)
+### 1. Compile (brain-dump/ -> knowledge/)
 
-When processing a daily log:
+When processing a brain-dump file:
 
-1. Read the daily log file
+1. Read the brain-dump source file
 2. Read `knowledge/index.md` to understand current knowledge state
 3. Read existing articles that may need updating
 4. For each piece of knowledge found in the log:
-   - If an existing concept article covers this topic: UPDATE it with new information, add the daily log as a source
+   - If an existing concept article covers this topic: UPDATE it with new information, add the brain-dump file as a source
    - If it's a new topic: CREATE a new `concepts/` article
 5. If the log reveals a non-obvious connection between 2+ existing concepts: CREATE a `connections/` article
 6. UPDATE `knowledge/index.md` with new/modified entries
 7. APPEND to `knowledge/log.md`
 
 **Important guidelines:**
-- A single daily log may touch 3-10 knowledge articles
+- A single brain-dump file may touch 3-10 knowledge articles
 - Prefer updating existing articles over creating near-duplicates
 - Use Obsidian-style `[[wikilinks]]` with full relative paths from knowledge/
 - Write in encyclopedia style - factual, concise, self-contained
 - Every article must have YAML frontmatter
-- Every article must link back to its source daily logs
+- Every article must link back to its source brain-dump file(s)
 
 ### 2. Query (Ask the Knowledge Base)
 
@@ -265,8 +265,8 @@ Seven checks, run periodically:
 
 1. **Broken links** - `[[wikilinks]]` pointing to non-existent articles
 2. **Orphan pages** - Articles with zero inbound links from other articles
-3. **Orphan sources** - Daily logs that haven't been compiled yet
-4. **Stale articles** - Source daily log changed since article was last compiled
+3. **Orphan sources** - Brain-dump files that haven't been compiled yet
+4. **Stale articles** - Source brain-dump file changed since article was last compiled
 5. **Contradictions** - Conflicting claims across articles (requires LLM judgment)
 6. **Missing backlinks** - A links to B but B doesn't link back to A
 7. **Sparse articles** - Below 200 words, likely incomplete
@@ -282,7 +282,7 @@ Output: a markdown report with severity levels (error, warning, suggestion).
 - **Dates:** ISO 8601 (YYYY-MM-DD for dates, full ISO for timestamps in log.md)
 - **File naming:** lowercase, hyphens for spaces (e.g., `supabase-row-level-security.md`)
 - **Frontmatter:** Every article must have YAML frontmatter with at minimum: title, sources, created, updated
-- **Sources:** Always link back to the daily log(s) that contributed to an article
+- **Sources:** Always link back to the brain-dump file(s) that contributed to an article
 
 ---
 
@@ -296,7 +296,7 @@ llm-personal-kb/
 |-- AGENTS.md                        # This file - schema + full technical reference
 |-- README.md                        # Concise overview + quick start
 |-- pyproject.toml                   # Dependencies (at root so hooks can find it)
-|-- daily/                           # "Source code" - conversation logs (immutable)
+|-- brain-dump/                      # "Source code" - raw captures (immutable)
 |-- knowledge/                       # "Executable" - compiled knowledge (LLM-owned)
 |   |-- index.md                     #   Master catalog - THE retrieval mechanism
 |   |-- log.md                       #   Append-only build log
@@ -304,7 +304,7 @@ llm-personal-kb/
 |   |-- connections/                 #   Cross-cutting insights linking 2+ concepts
 |   |-- qa/                          #   Filed query answers (compounding knowledge)
 |-- scripts/                         # CLI tools
-|   |-- compile.py                   #   Compile daily logs -> knowledge articles
+|   |-- compile.py                   #   Compile brain-dump -> knowledge articles
 |   |-- query.py                     #   Ask questions (index-guided, no RAG)
 |   |-- lint.py                      #   7 health checks
 |   |-- flush.py                     #   Extract memories from conversations (background)
@@ -312,7 +312,7 @@ llm-personal-kb/
 |   |-- utils.py                     #   Shared helpers
 |-- hooks/                           # Claude Code hooks
 |   |-- session-start.py             #   Injects knowledge into every session
-|   |-- session-end.py               #   Extracts conversation -> daily log
+|   |-- session-end.py               #   Extracts conversation -> brain dump
 |   |-- pre-compact.py               #   Safety net: captures context before compaction
 |-- reports/                         # Lint reports (gitignored)
 ```
@@ -341,7 +341,7 @@ Commands use simple relative paths from the project root. Empty `matcher` catche
 
 **`session-start.py`** (SessionStart)
 - Pure local I/O, no API calls, runs in under 1 second
-- Reads `knowledge/index.md` and the most recent daily log
+- Reads `knowledge/index.md` and the most recent brain dump
 - Outputs JSON to stdout: `{"hookSpecificOutput": {"hookEventName": "SessionStart", "additionalContext": "..."}}`
 - Claude sees the knowledge base index at the start of every session
 - Max context: 20,000 characters
@@ -374,9 +374,9 @@ This ensures flush.py survives after Claude Code's hook process exits.
 3. Skips if context is empty or if same session was flushed within 60 seconds (deduplication)
 4. Calls Claude Agent SDK (`query()` with `allowed_tools=[]`, `max_turns=2`)
 5. Claude decides what's worth saving - returns structured bullet points or `FLUSH_OK`
-6. Appends result to `daily/YYYY-MM-DD.md`
+6. Appends result to `brain-dump/YYYY-MM-DD.md`
 7. Cleans up temp context file
-8. **End-of-day auto-compilation:** If it's past 6 PM local time (`COMPILE_AFTER_HOUR = 18`) and today's daily log has changed since its last compilation (hash comparison against `state.json`), spawns `compile.py` as another detached background process. This means compilation happens automatically once a day without needing a cron job or manual trigger.
+8. **End-of-day auto-compilation:** If it's past 6 PM local time (`COMPILE_AFTER_HOUR = 18`) and today's brain-dump file has changed since its last compilation (hash comparison against `state.json`), spawns `compile.py` as another detached background process. This means compilation happens automatically once a day without needing a cron job or manual trigger.
 
 ### JSONL Transcript Format
 
@@ -412,17 +412,17 @@ async for message in query(
 ):
 ```
 
-- Builds a prompt with: AGENTS.md schema, current index, all existing articles, and the daily log
-- Claude reads the daily log, decides what concepts to extract, and writes files directly
+- Builds a prompt with: AGENTS.md schema, current index, all existing articles, and the brain-dump source
+- Claude reads the brain dump, decides what concepts to extract, and writes files directly
 - `permission_mode="acceptEdits"` auto-approves all file operations
-- Incremental: tracks SHA-256 hashes of daily logs in `state.json`, skips unchanged files
-- Cost: ~$0.45-0.65 per daily log (increases as KB grows)
+- Incremental: tracks SHA-256 hashes of brain-dump files in `state.json`, skips unchanged files
+- Cost: ~$0.45-0.65 per brain-dump file compiled (increases as KB grows)
 
 **CLI:**
 ```bash
 uv run python scripts/compile.py              # compile new/changed only
 uv run python scripts/compile.py --all        # force recompile everything
-uv run python scripts/compile.py --file daily/2026-04-01.md
+uv run python scripts/compile.py --file brain-dump/2026-04-01.md
 uv run python scripts/compile.py --dry-run
 ```
 
@@ -448,7 +448,7 @@ Seven checks:
 |-------|------|---------|
 | Broken links | Structural | `[[wikilinks]]` to non-existent articles |
 | Orphan pages | Structural | Articles with zero inbound links |
-| Orphan sources | Structural | Daily logs not yet compiled |
+| Orphan sources | Structural | Brain-dump files not yet compiled |
 | Stale articles | Structural | Source logs changed since compilation |
 | Missing backlinks | Structural | A links to B but B doesn't link back |
 | Sparse articles | Structural | Under 200 words |
@@ -467,7 +467,7 @@ Reports saved to `reports/lint-YYYY-MM-DD.md`.
 ## State Tracking
 
 `scripts/state.json` tracks:
-- `ingested` - map of daily log filenames to SHA-256 hashes, compilation timestamps, and costs
+- `ingested` - map of brain-dump filenames to SHA-256 hashes, compilation timestamps, and costs
 - `query_count` - total queries run
 - `last_lint` - timestamp of most recent lint
 - `total_cost` - cumulative API cost
@@ -494,7 +494,7 @@ No API key needed - uses Claude Code's built-in credentials at `~/.claude/.crede
 
 | Operation | Cost |
 |-----------|------|
-| Compile one daily log | $0.45-0.65 |
+| Compile one brain-dump file | $0.45-0.65 |
 | Query (no file-back) | ~$0.15-0.25 |
 | Query (with file-back) | ~$0.25-0.40 |
 | Full lint (with contradictions) | ~$0.15-0.25 |

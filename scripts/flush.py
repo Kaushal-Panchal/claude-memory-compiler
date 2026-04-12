@@ -3,7 +3,7 @@ Memory flush agent - extracts important knowledge from conversation context.
 
 Spawned by session-end.py or pre-compact.py as a background process. Reads
 pre-extracted conversation context from a .md file, uses the Claude Agent SDK
-to decide what's worth saving, and appends the result to today's daily log.
+to decide what's worth saving, and appends the result to today's brain-dump file.
 
 Usage:
     uv run python flush.py <context_file.md> <session_id>
@@ -24,7 +24,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-DAILY_DIR = ROOT / "daily"
+BRAIN_DUMP_DIR = ROOT / "brain-dump"
 SCRIPTS_DIR = ROOT / "scripts"
 STATE_FILE = SCRIPTS_DIR / "last-flush.json"
 LOG_FILE = SCRIPTS_DIR / "flush.log"
@@ -53,15 +53,15 @@ def save_flush_state(state: dict) -> None:
     STATE_FILE.write_text(json.dumps(state), encoding="utf-8")
 
 
-def append_to_daily_log(content: str, section: str = "Session") -> None:
-    """Append content to today's daily log."""
+def append_to_brain_dump(content: str, section: str = "Session") -> None:
+    """Append content to today's dated file under brain-dump/."""
     today = datetime.now(timezone.utc).astimezone()
-    log_path = DAILY_DIR / f"{today.strftime('%Y-%m-%d')}.md"
+    log_path = BRAIN_DUMP_DIR / f"{today.strftime('%Y-%m-%d')}.md"
 
     if not log_path.exists():
-        DAILY_DIR.mkdir(parents=True, exist_ok=True)
+        BRAIN_DUMP_DIR.mkdir(parents=True, exist_ok=True)
         log_path.write_text(
-            f"# Daily Log: {today.strftime('%Y-%m-%d')}\n\n## Sessions\n\n## Memory Maintenance\n\n",
+            f"# Brain dump: {today.strftime('%Y-%m-%d')}\n\n## Sessions\n\n## Memory Maintenance\n\n",
             encoding="utf-8",
         )
 
@@ -83,10 +83,10 @@ async def run_flush(context: str) -> str:
     )
 
     prompt = f"""Review the conversation context below and respond with a concise summary
-of important items that should be preserved in the daily log.
+of important items that should be preserved in the brain dump.
 Do NOT use any tools — just return plain text.
 
-Format your response as a structured daily log entry with these sections:
+Format your response as a structured brain-dump entry with these sections:
 
 **Context:** [One line about what the user was working on]
 
@@ -160,7 +160,7 @@ def maybe_trigger_compilation() -> None:
             if today_log in ingested:
                 # Already compiled today - check if the log has changed since
                 from hashlib import sha256
-                log_path = DAILY_DIR / today_log
+                log_path = BRAIN_DUMP_DIR / today_log
                 if log_path.exists():
                     current_hash = sha256(log_path.read_bytes()).hexdigest()[:16]
                     if ingested[today_log].get("hash") == current_hash:
@@ -225,18 +225,18 @@ def main():
     # Run the LLM extraction
     response = asyncio.run(run_flush(context))
 
-    # Append to daily log
+    # Append to brain dump
     if "FLUSH_OK" in response:
         logging.info("Result: FLUSH_OK")
-        append_to_daily_log(
+        append_to_brain_dump(
             "FLUSH_OK - Nothing worth saving from this session", "Memory Flush"
         )
     elif "FLUSH_ERROR" in response:
         logging.error("Result: %s", response)
-        append_to_daily_log(response, "Memory Flush")
+        append_to_brain_dump(response, "Memory Flush")
     else:
-        logging.info("Result: saved to daily log (%d chars)", len(response))
-        append_to_daily_log(response, "Session")
+        logging.info("Result: saved to brain dump (%d chars)", len(response))
+        append_to_brain_dump(response, "Session")
 
     # Update dedup state
     save_flush_state({"session_id": session_id, "timestamp": time.time()})

@@ -1,13 +1,13 @@
 """
-Compile daily conversation logs into structured knowledge articles.
+Compile brain-dump source logs into structured knowledge articles.
 
-This is the "LLM compiler" - it reads daily logs (source code) and produces
+This is the "LLM compiler" - it reads brain-dump markdown (source code) and produces
 organized knowledge articles (the executable).
 
 Usage:
     uv run python compile.py                    # compile new/changed logs only
     uv run python compile.py --all              # force recompile everything
-    uv run python compile.py --file daily/2026-04-01.md  # compile a specific log
+    uv run python compile.py --file brain-dump/2026-04-01.md  # compile a specific log
     uv run python compile.py --dry-run          # show what would be compiled
 """
 
@@ -18,7 +18,7 @@ import asyncio
 import sys
 from pathlib import Path
 
-from config import AGENTS_FILE, CONCEPTS_DIR, CONNECTIONS_DIR, DAILY_DIR, KNOWLEDGE_DIR, now_iso
+from config import AGENTS_FILE, BRAIN_DUMP_DIR, CONCEPTS_DIR, CONNECTIONS_DIR, KNOWLEDGE_DIR, now_iso
 from utils import (
     file_hash,
     list_raw_files,
@@ -32,8 +32,8 @@ from utils import (
 ROOT_DIR = Path(__file__).resolve().parent.parent
 
 
-async def compile_daily_log(log_path: Path, state: dict) -> float:
-    """Compile a single daily log into knowledge articles.
+async def compile_brain_dump_file(log_path: Path, state: dict) -> float:
+    """Compile a single brain-dump source file into knowledge articles.
 
     Returns the API cost of the compilation.
     """
@@ -64,7 +64,7 @@ async def compile_daily_log(log_path: Path, state: dict) -> float:
 
     timestamp = now_iso()
 
-    prompt = f"""You are a knowledge compiler. Your job is to read a daily conversation log
+    prompt = f"""You are a knowledge compiler. Your job is to read a brain-dump conversation log
 and extract knowledge into structured wiki articles.
 
 ## Schema (AGENTS.md)
@@ -79,7 +79,7 @@ and extract knowledge into structured wiki articles.
 
 {existing_articles_context if existing_articles_context else "(No existing articles yet)"}
 
-## Daily Log to Compile
+## Brain dump to compile
 
 **File:** {log_path.name}
 
@@ -87,14 +87,14 @@ and extract knowledge into structured wiki articles.
 
 ## Your Task
 
-Read the daily log above and compile it into wiki articles following the schema exactly.
+Read the brain dump above and compile it into wiki articles following the schema exactly.
 
 ### Rules:
 
 1. **Extract key concepts** - Identify 3-7 distinct concepts worth their own article
 2. **Create concept articles** in `knowledge/concepts/` - One .md file per concept
    - Use the exact article format from AGENTS.md (YAML frontmatter + sections)
-   - Include `sources:` in frontmatter pointing to the daily log file
+   - Include `sources:` in frontmatter pointing to the brain-dump source file
    - Use `[[concepts/slug]]` wikilinks to link to related concepts
    - Write in encyclopedia style - neutral, comprehensive
 3. **Create connection articles** in `knowledge/connections/` if this log reveals non-obvious
@@ -106,7 +106,7 @@ Read the daily log above and compile it into wiki articles following the schema 
 6. **Append to knowledge/log.md** - Add a timestamped entry:
    ```
    ## [{timestamp}] compile | {log_path.name}
-   - Source: daily/{log_path.name}
+   - Source: brain-dump/{log_path.name}
    - Articles created: [[concepts/x]], [[concepts/y]]
    - Articles updated: [[concepts/z]] (if any)
    ```
@@ -123,7 +123,7 @@ Read the daily log above and compile it into wiki articles following the schema 
 - Key Points section should have 3-5 bullet points
 - Details section should have 2+ paragraphs
 - Related Concepts section should have 2+ entries
-- Sources section should cite the daily log with specific claims extracted
+- Sources section should cite the brain-dump file with specific claims extracted
 """
 
     cost = 0.0
@@ -164,9 +164,9 @@ Read the daily log above and compile it into wiki articles following the schema 
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Compile daily logs into knowledge articles")
+    parser = argparse.ArgumentParser(description="Compile brain-dump logs into knowledge articles")
     parser.add_argument("--all", action="store_true", help="Force recompile all logs")
-    parser.add_argument("--file", type=str, help="Compile a specific daily log file")
+    parser.add_argument("--file", type=str, help="Compile a specific brain-dump file")
     parser.add_argument("--dry-run", action="store_true", help="Show what would be compiled")
     args = parser.parse_args()
 
@@ -176,7 +176,7 @@ def main():
     if args.file:
         target = Path(args.file)
         if not target.is_absolute():
-            target = DAILY_DIR / target.name
+            target = BRAIN_DUMP_DIR / target.name
         if not target.exists():
             # Try resolving relative to project root
             target = ROOT_DIR / args.file
@@ -197,7 +197,7 @@ def main():
                     to_compile.append(log_path)
 
     if not to_compile:
-        print("Nothing to compile - all daily logs are up to date.")
+        print("Nothing to compile - all brain-dump sources are up to date.")
         return
 
     print(f"{'[DRY RUN] ' if args.dry_run else ''}Files to compile ({len(to_compile)}):")
@@ -211,7 +211,7 @@ def main():
     total_cost = 0.0
     for i, log_path in enumerate(to_compile, 1):
         print(f"\n[{i}/{len(to_compile)}] Compiling {log_path.name}...")
-        cost = asyncio.run(compile_daily_log(log_path, state))
+        cost = asyncio.run(compile_brain_dump_file(log_path, state))
         total_cost += cost
         print(f"  Done.")
 

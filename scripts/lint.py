@@ -39,8 +39,8 @@ def check_broken_links() -> list[dict]:
         content = article.read_text(encoding="utf-8")
         rel = article.relative_to(KNOWLEDGE_DIR)
         for link in extract_wikilinks(content):
-            if link.startswith("daily/"):
-                continue  # daily log references are valid
+            if link.startswith("brain-dump/"):
+                continue  # brain-dump source references are valid
             if not wiki_article_exists(link):
                 issues.append({
                     "severity": "error",
@@ -69,7 +69,7 @@ def check_orphan_pages() -> list[dict]:
 
 
 def check_orphan_sources() -> list[dict]:
-    """Check for daily logs that haven't been compiled yet."""
+    """Check for brain-dump sources that haven't been compiled yet."""
     state = load_state()
     ingested = state.get("ingested", {})
     issues = []
@@ -78,14 +78,14 @@ def check_orphan_sources() -> list[dict]:
             issues.append({
                 "severity": "warning",
                 "check": "orphan_source",
-                "file": f"daily/{log_path.name}",
-                "detail": f"Uncompiled daily log: {log_path.name} has not been ingested",
+                "file": f"brain-dump/{log_path.name}",
+                "detail": f"Uncompiled brain-dump file: {log_path.name} has not been ingested",
             })
     return issues
 
 
 def check_stale_articles() -> list[dict]:
-    """Check if source daily logs have changed since compilation."""
+    """Check if brain-dump sources have changed since compilation."""
     state = load_state()
     ingested = state.get("ingested", {})
     issues = []
@@ -98,7 +98,7 @@ def check_stale_articles() -> list[dict]:
                 issues.append({
                     "severity": "warning",
                     "check": "stale_article",
-                    "file": f"daily/{rel}",
+                    "file": f"brain-dump/{rel}",
                     "detail": f"Stale: {rel} has changed since last compilation",
                 })
     return issues
@@ -113,7 +113,7 @@ def check_missing_backlinks() -> list[dict]:
         source_link = str(rel).replace(".md", "").replace("\\", "/")
 
         for link in extract_wikilinks(content):
-            if link.startswith("daily/"):
+            if link.startswith("brain-dump/"):
                 continue
             target_path = KNOWLEDGE_DIR / f"{link}.md"
             if target_path.exists():

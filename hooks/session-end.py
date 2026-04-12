@@ -3,7 +3,7 @@ SessionEnd hook - captures conversation transcript for memory extraction.
 
 When a Claude Code session ends, this hook reads the transcript path from
 stdin, extracts conversation context, and spawns flush.py as a background
-process to extract knowledge into the daily log.
+process to extract knowledge into the brain dump.
 
 The hook itself does NO API calls - only local file I/O for speed (<10s).
 """
@@ -25,7 +25,6 @@ if os.environ.get("CLAUDE_INVOKED_BY"):
     sys.exit(0)
 
 ROOT = Path(__file__).resolve().parent.parent
-DAILY_DIR = ROOT / "daily"
 SCRIPTS_DIR = ROOT / "scripts"
 STATE_DIR = SCRIPTS_DIR
 
